@@ -222,6 +222,41 @@ describe("POST /api/setup/validate/anthropic-key", () => {
 
     expect(res.json().valid).toBe(true);
   });
+
+  it("uses custom baseUrl when provided", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/setup/validate/anthropic-key",
+      payload: { key: "sk-ant-test", baseUrl: "https://proxy.example.com" },
+    });
+
+    expect(res.json().valid).toBe(true);
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://proxy.example.com/v1/models",
+      expect.objectContaining({
+        headers: expect.objectContaining({ "x-api-key": "sk-ant-test" }),
+      }),
+    );
+  });
+
+  it("strips trailing slash from custom baseUrl", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", mockFetch);
+
+    await app.inject({
+      method: "POST",
+      url: "/api/setup/validate/anthropic-key",
+      payload: { key: "sk-ant-test", baseUrl: "https://proxy.example.com/" },
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://proxy.example.com/v1/models",
+      expect.any(Object),
+    );
+  });
 });
 
 describe("POST /api/setup/validate/openai-key", () => {
@@ -244,6 +279,25 @@ describe("POST /api/setup/validate/openai-key", () => {
     });
 
     expect(res.statusCode).toBe(400);
+  });
+
+  it("uses custom baseUrl when provided", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", mockFetch);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/setup/validate/openai-key",
+      payload: { key: "sk-test", baseUrl: "https://proxy.example.com" },
+    });
+
+    expect(res.json().valid).toBe(true);
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://proxy.example.com/v1/models",
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: "Bearer sk-test" }),
+      }),
+    );
   });
 });
 

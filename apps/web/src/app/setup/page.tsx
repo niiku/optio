@@ -82,6 +82,10 @@ export default function SetupPage() {
   const [codexAuthMode, setCodexAuthMode] = useState<"api-key" | "app-server">("api-key");
   const [codexAppServerUrl, setCodexAppServerUrl] = useState("");
 
+  // Step 3: Custom API base URLs
+  const [anthropicBaseUrl, setAnthropicBaseUrl] = useState("");
+  const [openaiBaseUrl, setOpenaiBaseUrl] = useState("");
+
   // Step 3: Copilot token
   const [copilotToken, setCopilotToken] = useState("");
   const [copilotValidated, setCopilotValidated] = useState(false);
@@ -242,7 +246,7 @@ export default function SetupPage() {
     setLoading(true);
     setAnthropicError("");
     try {
-      const res = await api.validateAnthropicKey(key);
+      const res = await api.validateAnthropicKey(key, anthropicBaseUrl.trim() || undefined);
       if (res.valid) {
         setAnthropicValidated(true);
       } else {
@@ -260,7 +264,7 @@ export default function SetupPage() {
     setLoading(true);
     setOpenaiError("");
     try {
-      const res = await api.validateOpenAIKey(key);
+      const res = await api.validateOpenAIKey(key, openaiBaseUrl.trim() || undefined);
       if (res.valid) {
         setOpenaiValidated(true);
       } else {
@@ -393,6 +397,9 @@ export default function SetupPage() {
 
       if (claudeAuthMode === "api-key" && anthropicKey.trim() && anthropicValidated) {
         await api.createSecret({ name: "ANTHROPIC_API_KEY", value: anthropicKey });
+        if (anthropicBaseUrl.trim()) {
+          await api.createSecret({ name: "ANTHROPIC_BASE_URL", value: anthropicBaseUrl.trim() });
+        }
       }
       if (claudeAuthMode === "oauth-token" && oauthToken.trim()) {
         await api.createSecret({ name: "CLAUDE_CODE_OAUTH_TOKEN", value: oauthToken });
@@ -404,6 +411,9 @@ export default function SetupPage() {
       } else if (openaiKey.trim() && openaiValidated) {
         await api.createSecret({ name: "CODEX_AUTH_MODE", value: "api-key" });
         await api.createSecret({ name: "OPENAI_API_KEY", value: openaiKey });
+        if (openaiBaseUrl.trim()) {
+          await api.createSecret({ name: "OPENAI_BASE_URL", value: openaiBaseUrl.trim() });
+        }
       }
       // Save Copilot token
       if (copilotToken.trim() && copilotValidated) {
@@ -1016,6 +1026,25 @@ export default function SetupPage() {
                               <CheckCircle className="w-3 h-3" /> API key valid
                             </p>
                           )}
+                          <div>
+                            <label className="text-xs text-text-muted">
+                              API Base URL{" "}
+                              <span className="text-text-muted/60">
+                                (optional, for custom proxies)
+                              </span>
+                            </label>
+                            <input
+                              type="text"
+                              value={anthropicBaseUrl}
+                              onChange={(e) => {
+                                setAnthropicBaseUrl(e.target.value);
+                                setAnthropicValidated(false);
+                                setAnthropicError("");
+                              }}
+                              placeholder="https://api.anthropic.com"
+                              className="w-full mt-1 px-3 py-2 rounded-md bg-bg-card border border-border text-sm focus:outline-none focus:border-primary font-mono"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1158,6 +1187,25 @@ export default function SetupPage() {
                               <CheckCircle className="w-3 h-3" /> API key valid
                             </p>
                           )}
+                          <div>
+                            <label className="text-xs text-text-muted">
+                              API Base URL{" "}
+                              <span className="text-text-muted/60">
+                                (optional, for custom proxies)
+                              </span>
+                            </label>
+                            <input
+                              type="text"
+                              value={openaiBaseUrl}
+                              onChange={(e) => {
+                                setOpenaiBaseUrl(e.target.value);
+                                setOpenaiValidated(false);
+                                setOpenaiError("");
+                              }}
+                              placeholder="https://api.openai.com"
+                              className="w-full mt-1 px-3 py-2 rounded-md bg-bg-card border border-border text-sm focus:outline-none focus:border-primary font-mono"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>

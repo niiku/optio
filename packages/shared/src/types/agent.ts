@@ -14,6 +14,10 @@ export interface AgentTaskInput {
   codexAuthMode?: CodexAuthMode;
   /** The app-server WebSocket URL for Codex CLI (used when codexAuthMode is "app-server") */
   codexAppServerUrl?: string;
+  /** Custom Anthropic API base URL (e.g. for LiteLLM, AWS Bedrock proxies) */
+  anthropicBaseUrl?: string;
+  /** Custom OpenAI API base URL (e.g. for LiteLLM, Azure OpenAI proxies) */
+  openaiBaseUrl?: string;
   copilotAuthMode?: CopilotAuthMode;
   optioApiUrl?: string; // for apiKeyHelper callback
   /** The rendered system prompt (from the prompt template) */

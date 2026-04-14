@@ -19,6 +19,12 @@ const gitlabTokenSchema = z
   })
   .describe("GitLab token + optional host");
 const keySchema = z.object({ key: z.string().min(1) }).describe("Body with a required API key");
+const keyWithBaseUrlSchema = z
+  .object({
+    key: z.string().min(1),
+    baseUrl: z.string().url().optional(),
+  })
+  .describe("API key with optional custom base URL");
 const reposBodySchema = z
   .object({
     token: z
@@ -272,15 +278,16 @@ export async function setupRoutes(rawApp: FastifyInstance) {
         summary: "Validate an Anthropic API key",
         description: "Probe Anthropic's /v1/models endpoint with the provided key.",
         tags: ["Setup & Settings"],
-        body: keySchema,
+        body: keyWithBaseUrlSchema,
         response: { 200: ValidationResultSchema, 400: ErrorResponseSchema },
       },
     },
     async (req, reply) => {
-      const { key } = req.body;
+      const { key, baseUrl } = req.body;
+      const endpoint = (baseUrl?.replace(/\/+$/, "") ?? "https://api.anthropic.com") + "/v1/models";
 
       try {
-        const res = await fetch("https://api.anthropic.com/v1/models", {
+        const res = await fetch(endpoint, {
           headers: {
             "x-api-key": key,
             "anthropic-version": "2023-06-01",
@@ -352,15 +359,16 @@ export async function setupRoutes(rawApp: FastifyInstance) {
         summary: "Validate an OpenAI API key",
         description: "Probe OpenAI's /v1/models endpoint with the provided key.",
         tags: ["Setup & Settings"],
-        body: keySchema,
+        body: keyWithBaseUrlSchema,
         response: { 200: ValidationResultSchema, 400: ErrorResponseSchema },
       },
     },
     async (req, reply) => {
-      const { key } = req.body;
+      const { key, baseUrl } = req.body;
+      const endpoint = (baseUrl?.replace(/\/+$/, "") ?? "https://api.openai.com") + "/v1/models";
 
       try {
-        const res = await fetch("https://api.openai.com/v1/models", {
+        const res = await fetch(endpoint, {
           headers: { Authorization: `Bearer ${key}` },
         });
         if (res.ok) {

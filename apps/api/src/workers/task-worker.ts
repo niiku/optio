@@ -251,6 +251,14 @@ export function startTaskWorker() {
                 taskWorkspaceId,
               ).catch(() => null)) as any) ?? undefined)
             : undefined;
+        const anthropicBaseUrl =
+          ((await retrieveSecretWithFallback("ANTHROPIC_BASE_URL", "global", taskWorkspaceId).catch(
+            () => null,
+          )) as string | null) ?? undefined;
+        const openaiBaseUrl =
+          ((await retrieveSecretWithFallback("OPENAI_BASE_URL", "global", taskWorkspaceId).catch(
+            () => null,
+          )) as string | null) ?? undefined;
         const geminiAuthMode =
           ((await retrieveSecretWithFallback("GEMINI_AUTH_MODE", "global", taskWorkspaceId).catch(
             () => null,
@@ -326,6 +334,8 @@ export function startTaskWorker() {
           claudeAuthMode,
           codexAuthMode,
           codexAppServerUrl,
+          anthropicBaseUrl,
+          openaiBaseUrl,
           optioApiUrl,
           renderedPrompt: finalRenderedPrompt,
           taskFileContent: finalTaskFileContent,

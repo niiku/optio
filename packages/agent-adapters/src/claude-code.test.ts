@@ -187,6 +187,28 @@ describe("ClaudeCodeAdapter", () => {
       expect(settings.effortLevel).toBe("high");
     });
 
+    it("sets ANTHROPIC_BASE_URL when anthropicBaseUrl is provided in api-key mode", () => {
+      const config = adapter.buildContainerConfig({
+        ...baseInput,
+        anthropicBaseUrl: "https://my-proxy.example.com",
+      });
+      expect(config.env.ANTHROPIC_BASE_URL).toBe("https://my-proxy.example.com");
+    });
+
+    it("does not set ANTHROPIC_BASE_URL when not provided", () => {
+      const config = adapter.buildContainerConfig(baseInput);
+      expect(config.env.ANTHROPIC_BASE_URL).toBeUndefined();
+    });
+
+    it("does not set ANTHROPIC_BASE_URL in max-subscription mode", () => {
+      const config = adapter.buildContainerConfig({
+        ...baseInput,
+        claudeAuthMode: "max-subscription",
+        anthropicBaseUrl: "https://my-proxy.example.com",
+      });
+      expect(config.env.ANTHROPIC_BASE_URL).toBeUndefined();
+    });
+
     it("returns /opt/optio/entrypoint.sh as command", () => {
       const config = adapter.buildContainerConfig(baseInput);
       expect(config.command).toEqual(["/opt/optio/entrypoint.sh"]);

@@ -75,6 +75,9 @@ export class CodexAdapter implements AgentAdapter {
     } else {
       env.OPTIO_CODEX_AUTH_MODE = "api-key";
       requiredSecrets.push("OPENAI_API_KEY");
+      if (input.openaiBaseUrl) {
+        env.OPENAI_BASE_URL = input.openaiBaseUrl;
+      }
     }
 
     const setupFiles: AgentContainerConfig["setupFiles"] = [];

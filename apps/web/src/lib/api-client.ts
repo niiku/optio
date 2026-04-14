@@ -383,16 +383,16 @@ export const api = {
       body: JSON.stringify({ token, host }),
     }),
 
-  validateAnthropicKey: (key: string) =>
+  validateAnthropicKey: (key: string, baseUrl?: string) =>
     request<{ valid: boolean; error?: string }>("/api/setup/validate/anthropic-key", {
       method: "POST",
-      body: JSON.stringify({ key }),
+      body: JSON.stringify({ key, ...(baseUrl ? { baseUrl } : {}) }),
     }),
 
-  validateOpenAIKey: (key: string) =>
+  validateOpenAIKey: (key: string, baseUrl?: string) =>
     request<{ valid: boolean; error?: string }>("/api/setup/validate/openai-key", {
       method: "POST",
-      body: JSON.stringify({ key }),
+      body: JSON.stringify({ key, ...(baseUrl ? { baseUrl } : {}) }),
     }),
 
   validateCopilotToken: (token: string) =>

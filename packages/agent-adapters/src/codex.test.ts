@@ -123,6 +123,28 @@ describe("CodexAdapter", () => {
       const config = adapter.buildContainerConfig(baseInput);
       expect(config.env.OPTIO_CODEX_AUTH_MODE).toBe("api-key");
     });
+
+    it("sets OPENAI_BASE_URL when openaiBaseUrl is provided in api-key mode", () => {
+      const config = adapter.buildContainerConfig({
+        ...baseInput,
+        openaiBaseUrl: "https://my-proxy.example.com",
+      });
+      expect(config.env.OPENAI_BASE_URL).toBe("https://my-proxy.example.com");
+    });
+
+    it("does not set OPENAI_BASE_URL when not provided", () => {
+      const config = adapter.buildContainerConfig(baseInput);
+      expect(config.env.OPENAI_BASE_URL).toBeUndefined();
+    });
+
+    it("does not set OPENAI_BASE_URL in app-server mode", () => {
+      const config = adapter.buildContainerConfig({
+        ...baseInput,
+        codexAuthMode: "app-server",
+        openaiBaseUrl: "https://my-proxy.example.com",
+      });
+      expect(config.env.OPENAI_BASE_URL).toBeUndefined();
+    });
   });
 
   describe("parseResult", () => {
