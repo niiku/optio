@@ -257,6 +257,20 @@ describe("POST /api/setup/validate/anthropic-key", () => {
       expect.any(Object),
     );
   });
+
+  it("rejects private-network custom baseUrl", async () => {
+    const mockFetch = vi.fn();
+    vi.stubGlobal("fetch", mockFetch);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/setup/validate/anthropic-key",
+      payload: { key: "sk-ant-test", baseUrl: "http://localhost:3000" },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
 });
 
 describe("POST /api/setup/validate/openai-key", () => {
@@ -298,6 +312,36 @@ describe("POST /api/setup/validate/openai-key", () => {
         headers: expect.objectContaining({ Authorization: "Bearer sk-test" }),
       }),
     );
+  });
+
+  it("strips trailing slash from custom baseUrl", async () => {
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", mockFetch);
+
+    await app.inject({
+      method: "POST",
+      url: "/api/setup/validate/openai-key",
+      payload: { key: "sk-test", baseUrl: "https://proxy.example.com/" },
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://proxy.example.com/v1/models",
+      expect.any(Object),
+    );
+  });
+
+  it("rejects private-network custom baseUrl", async () => {
+    const mockFetch = vi.fn();
+    vi.stubGlobal("fetch", mockFetch);
+
+    const res = await app.inject({
+      method: "POST",
+      url: "/api/setup/validate/openai-key",
+      payload: { key: "sk-test", baseUrl: "http://localhost:3000" },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(mockFetch).not.toHaveBeenCalled();
   });
 });
 

@@ -399,7 +399,11 @@ export default function SetupPage() {
         await api.createSecret({ name: "ANTHROPIC_API_KEY", value: anthropicKey });
         if (anthropicBaseUrl.trim()) {
           await api.createSecret({ name: "ANTHROPIC_BASE_URL", value: anthropicBaseUrl.trim() });
+        } else {
+          await api.deleteSecret("ANTHROPIC_BASE_URL").catch(() => {});
         }
+      } else {
+        await api.deleteSecret("ANTHROPIC_BASE_URL").catch(() => {});
       }
       if (claudeAuthMode === "oauth-token" && oauthToken.trim()) {
         await api.createSecret({ name: "CLAUDE_CODE_OAUTH_TOKEN", value: oauthToken });
@@ -408,12 +412,17 @@ export default function SetupPage() {
       if (codexAuthMode === "app-server" && codexAppServerUrl.trim()) {
         await api.createSecret({ name: "CODEX_AUTH_MODE", value: "app-server" });
         await api.createSecret({ name: "CODEX_APP_SERVER_URL", value: codexAppServerUrl.trim() });
+        await api.deleteSecret("OPENAI_BASE_URL").catch(() => {});
       } else if (openaiKey.trim() && openaiValidated) {
         await api.createSecret({ name: "CODEX_AUTH_MODE", value: "api-key" });
         await api.createSecret({ name: "OPENAI_API_KEY", value: openaiKey });
         if (openaiBaseUrl.trim()) {
           await api.createSecret({ name: "OPENAI_BASE_URL", value: openaiBaseUrl.trim() });
+        } else {
+          await api.deleteSecret("OPENAI_BASE_URL").catch(() => {});
         }
+      } else {
+        await api.deleteSecret("OPENAI_BASE_URL").catch(() => {});
       }
       // Save Copilot token
       if (copilotToken.trim() && copilotValidated) {

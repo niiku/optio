@@ -6,6 +6,7 @@ import { listSecrets, retrieveSecret } from "../services/secret-service.js";
 import { isSubscriptionAvailable } from "../services/auth-service.js";
 import { isGitHubAppConfigured, getInstallationToken } from "../services/github-app-service.js";
 import { isAuthDisabled } from "../services/oauth/index.js";
+import { assertSsrfSafe, isSsrfSafeUrl } from "../utils/ssrf.js";
 import { ErrorResponseSchema } from "../schemas/common.js";
 
 const tokenSchema = z.object({ token: z.string().min(1) }).describe("Body with a required token");
@@ -22,7 +23,13 @@ const keySchema = z.object({ key: z.string().min(1) }).describe("Body with a req
 const keyWithBaseUrlSchema = z
   .object({
     key: z.string().min(1),
-    baseUrl: z.string().url().optional(),
+    baseUrl: z
+      .string()
+      .url()
+      .refine(isSsrfSafeUrl, {
+        message: "URL must not target private or internal addresses",
+      })
+      .optional(),
   })
   .describe("API key with optional custom base URL");
 const reposBodySchema = z
@@ -287,6 +294,7 @@ export async function setupRoutes(rawApp: FastifyInstance) {
       const endpoint = (baseUrl?.replace(/\/+$/, "") ?? "https://api.anthropic.com") + "/v1/models";
 
       try {
+        await assertSsrfSafe(endpoint);
         const res = await fetch(endpoint, {
           headers: {
             "x-api-key": key,
@@ -368,6 +376,7 @@ export async function setupRoutes(rawApp: FastifyInstance) {
       const endpoint = (baseUrl?.replace(/\/+$/, "") ?? "https://api.openai.com") + "/v1/models";
 
       try {
+        await assertSsrfSafe(endpoint);
         const res = await fetch(endpoint, {
           headers: { Authorization: `Bearer ${key}` },
         });
